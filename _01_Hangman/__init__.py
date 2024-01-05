@@ -1,102 +1,115 @@
-import os
 import json
+import os
 import random
 
 
-allowed_chars = 'abcdefghijklmnopqrstuvwxyz'
+allowed_chars = 'abcdefghijklmnopqrstuvwxyz?'
+allowed_chars += allowed_chars.upper()
 
 
 def read_dictionary():
     with open(os.path.join(os.path.dirname(__file__), 'dictionary.json'), 'r') as file:
         content = file.read()
     words = json.loads(content)
-    words = list(filter(lambda word: len(word) == 4, words))
+    words = list(filter(lambda word: 3 < len(word[0]) < 7, words.items()))
     return words
 
 
 def draw_hangman(misses):
-    if misses == 0:
-        return r'''
-        +---+
-        |   |
-            |
-            |
-            |
-            |
-        ========='''
-    elif misses == 1:
-        return r'''
-        +---+
-        |   |
-        O   |
-            |
-            |
-            |
-        ========='''
-    elif misses == 2:
-        return r'''
-        +---+
-        |   |
-        O   |
-        |   |
-            |
-            |
-        ========='''
-    elif misses == 3:
-        return r'''
-        +---+
-        |   |
-        O   |
-       /|   |
-            |
-            |
-        ========='''
-    elif misses == 4:
-        return r'''
-        +---+
-        |   |
-        O   |
-       /|\  |
-            |
-            |
-        ========='''
-    elif misses == 5:
-        return r'''
-        +---+
-        |   |
-        O   |
-       /|\  |
-       /    |
-            |
-        ========='''
-    elif misses == 6:
-        return r'''
-        +---+
-        |   |
-        O   |
-       /|\  |
-       / \  |
-            |
-        ========='''
-    else:
-        return 'You lost!'
+    match misses:
+        case 0:
+            return r'''
+            +---+
+            |   |
+                |
+                |
+                |
+                |
+            ========='''
+        case 1:
+            return r'''
+            +---+
+            |   |
+            O   |
+                |
+                |
+                |
+            ========='''
+        case 2:
+            return r'''
+            +---+
+            |   |
+            O   |
+            |   |
+                |
+                |
+            ========='''
+        case 3:
+            return r'''
+            +---+
+            |   |
+            O   |
+           /|   |
+                |
+                |
+            ========='''
+        case 4:
+            return r'''
+            +---+
+            |   |
+            O   |
+           /|\  |
+                |
+                |
+            ========='''
+        case 5:
+            return r'''
+            +---+
+            |   |
+            O   |
+           /|\  |
+           /    |
+                |
+            ========='''
+        case 6:
+            return r'''
+            +---+
+            |   |
+            O   |
+           /|\  |
+           / \  |
+                |
+            ========='''
+        case _:
+            return 'You lost!'
 
 
 def game_loop(word):
+    hint = word[1]
+    word = word[0].lower()
+
     user_word = ['_'] * len(word)
 
     already_guessed = set()
     misses = 0
+    show_hint = False
 
     while True:
         os.system('clear')
 
         print(draw_hangman(misses))
-        print(' '.join(sorted(already_guessed)))
-        print(' '.join(user_word))
+        print(' '.join(sorted([x.upper() for x in already_guessed])))
+        print(' '.join([x.upper() for x in user_word]))
+
+        if show_hint:
+            print(hint.upper())
 
         user_input = input('Guess a letter: ')
         if len(user_input) != 1 or user_input not in allowed_chars:
+            continue
+
+        if user_input == '?':
+            show_hint = True
             continue
 
         user_input = user_input.lower()
@@ -124,7 +137,7 @@ def play():
     words = read_dictionary()
 
     while True:
-        if game_loop(random.sample(sorted(words), 1)[0].lower()):
+        if game_loop(random.sample(sorted(words), 1)[0]):
             print('You won!')
         else:
             print('You lost!')
